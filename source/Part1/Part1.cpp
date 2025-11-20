@@ -1,26 +1,74 @@
-﻿// Example with thread ID
-#include <thread>
-#include <iostream>
+﻿#include <iostream>
+#include <string>
+#include <vector>
 
-// Task function
-// Displays the thread's ID
-void hello() {
-	std::cout << "Hello from thread with ID " << std::this_thread::get_id() << '\n';
+using namespace std;
+
+int solution(vector<int> schedules, vector<vector<int>> timelogs, int startday) {
+    int answer = 0;
+    int i = 0;
+    for (auto& schedule : schedules)
+    {
+        std::cout << "출근희망시간" << schedule << std::endl;
+        int nowDay = startday;
+        bool lated = false;
+        auto& logs = timelogs[i];
+
+        for (auto& timelog : logs)
+        {
+            std::cout << "출근시간:" << timelog << ":" << nowDay << std::endl;
+
+            if (nowDay >= 6)
+            {
+                nowDay++;
+                if (nowDay > 7)
+                {
+                    nowDay = 1;
+                }
+                continue;
+            }
+
+            int endTime = schedule + 10;
+            int endHour = endTime / 100;
+            int endMin = endTime / 60;
+
+            if (endTime % 100 >= 60) {
+                endTime = (endHour + 1) * 100 + (endTime % 100 - 60);
+            }
+
+            if (timelog > (schedule + 10))
+            {
+                std::cout << "지각이다" << timelog << std::endl;
+                std::cout << ":" << nowDay << std::endl;
+
+                lated = true;
+                break;
+            }
+
+            nowDay++;
+        }       
+        
+        if (lated == false)
+        {
+            answer++;
+        }
+        ++i;
+    }
+    return answer;
 }
 
-int main() {
-	// Display the main thread's ID
-	std::cout << "Main thread has ID " << std::this_thread::get_id() << '\n';
+int main()
+{
+    vector<int> schedules = { 750, 800, 1100 };
+    vector<int> logs1 = { 710, 2359, 1050, 700, 650, 631, 659 };
+    vector<int> logs2 = { 800, 801, 805, 800, 759, 810, 809 };
+    vector<int> logs3 = { 1105, 1001, 1002, 600, 1059, 1001, 1100 };
+    vector<vector<int>> timelogs;  
+    timelogs.push_back(logs1);
+    timelogs.push_back(logs2);
+    timelogs.push_back(logs3);
+    int startday = 5;
+    solution(schedules, timelogs, startday);
 
-	// Create an std::thread object
-	std::thread thr(hello);
 
-	// Display the child thread's ID
-	std::cout << "Hello thread has ID " << thr.get_id() << '\n';
-
-	// Wait for the thread to complete
-	thr.join();
-
-	// Display the child thread's ID again
-	std::cout << "Hello thread now has ID " << thr.get_id() << '\n';
 }
