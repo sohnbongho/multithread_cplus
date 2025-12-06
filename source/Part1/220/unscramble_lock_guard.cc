@@ -1,4 +1,4 @@
-﻿// Use std::lock_guard to avoid scrambled output
+// Use std::lock_guard to avoid scrambled output
 #include <iostream>
 #include <mutex>
 #include <thread>

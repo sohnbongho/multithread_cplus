@@ -1,4 +1,5 @@
-﻿// Use std::lock_guard to avoid scrambled output
+// Use std::lock_guard to avoid scrambled output
+// Find out what happens when an exception is thrown
 #include <iostream>
 #include <mutex>
 #include <thread>
@@ -7,15 +8,14 @@
 
 using namespace std::literals;
 
-std::mutex print_mutex;
+std::mutex task_mutex;						// Global mutex object
 
-void task(std::string str)
+void task(const std::string& str)
 {
 	for (int i = 0; i < 5; ++i) {
 		try {
-			// Create an std::lock_guard object
-			// This calls print_mutex.lock()
-			std::lock_guard<std::mutex> lck_guard(print_mutex);
+			// Lock the mutex before the critical section
+			task_mutex.lock();
 
 			// Start of critical section
 			std::cout << str[0] << str[1] << str[2] << std::endl;
@@ -24,8 +24,10 @@ void task(std::string str)
 			throw std::exception();
 			// End of critical section
 
+			// Never gets called
+			task_mutex.unlock();
 			std::this_thread::sleep_for(50ms);
-		}  // Calls ~std::lock_guard
+		}
 		catch (std::exception& e) {
 			std::cout << "Exception caught: " << e.what() << '\n';
 		}
