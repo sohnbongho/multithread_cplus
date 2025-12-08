@@ -1,4 +1,4 @@
-﻿// Dining philosophers problem (part 1)
+// Dining philosophers problem (part 1)
 //
 // 5 philosophers sit at a round table which has 5 forks on it.
 // A philosopher has a fork at each side of them.
@@ -25,10 +25,10 @@ using namespace std::literals;
 // Some data about the problem
 constexpr int nforks = 5;
 constexpr int nphilosophers = nforks;
-std::string names[nphilosophers] = { "A", "B", "C", "D", "E" };
+std::string names[nphilosophers] = {"A", "B", "C", "D", "E"};
 
 // Keep track of how many times a philosopher is able to eat
-int mouthfuls[nphilosophers] = { 0 };
+int mouthfuls[nphilosophers] = {0};
 
 // A philosopher who has not picked up both forks is thinking
 constexpr auto think_time = 2s;
@@ -76,9 +76,9 @@ void dine(int phil_no)
 	//
 	// Each philosopher must pick up their left fork first
 	int lfork = phil_no;
-	int rfork = (phil_no + 1) % nforks;
+	int rfork = (phil_no+1) % nforks;
 
-
+	
 	print(phil_no, "\'s left fork is number ", lfork);
 	print(phil_no, "\'s right fork is number ", rfork);
 	print(phil_no, " is thinking...");
@@ -103,7 +103,7 @@ void dine(int phil_no)
 	// Succeeded - this philosopher can now eat
 	print(phil_no, " picks up fork ", rfork);
 	print(phil_no, " is eating...");
-
+	
 	std::this_thread::sleep_for(eat_time);
 
 	print(phil_no, " puts down fork ", lfork);
@@ -121,10 +121,10 @@ int main()
 	std::vector<std::thread> philos;
 
 	for (int i = 0; i < nphilosophers; ++i) {
-		philos.push_back(std::move(std::thread{ dine, i }));
+		philos.push_back(std::move(std::thread{dine, i}));
 	}
 
-	for (auto& philo : philos)
+	for (auto& philo: philos)
 		philo.join();
 
 	// How many times were the philosophers able to eat?
