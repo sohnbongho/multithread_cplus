@@ -1,8 +1,5 @@
-﻿// Example of a "lost wakeup"
-//
-// The writer thread sends its notification before the reader calls wait()
-// The reader never receives the notification
-// The reader thread blocks indefinitely
+// Condition variable with predicate
+// Example with multiple waiting threads
 #include <iostream>
 #include <thread>
 #include <condition_variable>
@@ -19,6 +16,9 @@ std::mutex mut;
 // The condition variable
 std::condition_variable cond_var;
 
+// bool flag for predicate
+bool condition = false;
+
 // Waiting thread
 void reader()
 {
@@ -31,14 +31,17 @@ void reader()
 	// This will unlock the mutex and make this thread
 	// sleep until the condition variable wakes us up
 	std::cout << "Reader thread sleeping...\n";
-	cond_var.wait(uniq_lck);
+
+	// Lambda predicate that checks the flag
+	cond_var.wait(uniq_lck, [] {return condition;});
 
 	// The condition variable has woken this thread up
 	// and locked the mutex
-	std::cout << "Reader thread wakes up\n";
+	std::cout << "Reader thread " << std::this_thread::get_id() << " wakes up\n";
 
 	// Display the new value of the string
 	std::cout << "Data is \"" << sdata << "\"\n";
+	std::cout << "Reader thread unlocks the mutex\n";
 }
 
 // Notifying thread
@@ -60,11 +63,21 @@ void writer()
 		// Modify the string
 		std::cout << "Writer thread modifying data...\n";
 		sdata = "Populated";
+
+		// Set the flag
+		condition = true;
+
+		std::cout << "Writer thread unlocks the mutex\n";
 	}
 
 	// Notify the condition variable
 	std::cout << "Writer thread sends notification\n";
-	cond_var.notify_one();
+
+	cond_var.notify_all();
+	/*
+	for (int i = 0; i < 2; ++i)
+		cond_var.notify_one();
+	*/
 }
 
 int main()
@@ -75,12 +88,20 @@ int main()
 	// Display its initial value
 	std::cout << "Data is \"" << sdata << "\"\n";
 
-	// Start the threads
-	// If the writer thread finishes before the reader thread starts, the notification is lost
+	// The notification is not lost,
+	// even if the writer thread finishes before the reader thread starts
+	// or there is a "spurious wakeup" (wait returns without a notification)
+
 	std::thread write(writer);
-	std::this_thread::sleep_for(500ms);
-	std::thread read(reader);
+	std::thread read1(reader);
+	std::this_thread::sleep_for(10ms);
+	std::thread read2(reader);
+	std::this_thread::sleep_for(10ms);
+	std::thread read3(reader);
+	std::this_thread::sleep_for(10ms);
 
 	write.join();
-	read.join();
+	read1.join();
+	read2.join();
+	read3.join();
 }

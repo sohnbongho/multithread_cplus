@@ -1,14 +1,17 @@
-﻿// Example of a "lost wakeup"
+// Condition variable example
 //
-// The writer thread sends its notification before the reader calls wait()
-// The reader never receives the notification
-// The reader thread blocks indefinitely
+// The reader thread waits for a notification
+// The writer thread modifies the shared variable "sdata"
+// The writer thread sends a notification
+// The reader thread receives the notification and resumes
+// The reader thread uses the new value of the shared data
 #include <iostream>
 #include <thread>
 #include <condition_variable>
 #include <string>
+#include <chrono>
 
-using namespace std::chrono;
+using namespace std::literals;
 
 // The shared data
 std::string sdata;
@@ -76,10 +79,8 @@ int main()
 	std::cout << "Data is \"" << sdata << "\"\n";
 
 	// Start the threads
-	// If the writer thread finishes before the reader thread starts, the notification is lost
-	std::thread write(writer);
-	std::this_thread::sleep_for(500ms);
 	std::thread read(reader);
+	std::thread write(writer);
 
 	write.join();
 	read.join();

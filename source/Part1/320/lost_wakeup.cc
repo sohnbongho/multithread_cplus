@@ -1,4 +1,4 @@
-﻿// Example of a "lost wakeup"
+// Example of a "lost wakeup"
 //
 // The writer thread sends its notification before the reader calls wait()
 // The reader never receives the notification
@@ -74,13 +74,13 @@ int main()
 
 	// Display its initial value
 	std::cout << "Data is \"" << sdata << "\"\n";
-
+	
 	// Start the threads
 	// If the writer thread finishes before the reader thread starts, the notification is lost
 	std::thread write(writer);
 	std::this_thread::sleep_for(500ms);
 	std::thread read(reader);
-
+	
 	write.join();
 	read.join();
 }
