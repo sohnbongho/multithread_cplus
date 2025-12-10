@@ -1,48 +1,33 @@
-﻿// Example using std::promise and std::future
-// to throw an exception from a producer thread
+// Example using std::promise and std::future
+// to send a result from a producer thread
 // to a consumer thread
 #include <future>
 #include <iostream>
 #include <thread>
-#include <exception>
 #include <chrono>
 
 // The producer's task function takes a std::promise as argument
 void produce(std::promise<int>& px)
 {
-	try {
-		using namespace std::literals;
-		int x = 42;
-		std::this_thread::sleep_for(2s);
+	using namespace std::literals;
 
-		// Code that may throw
-		if (1)
-			throw std::out_of_range("Oops");
+	// Produce the result
+	int x = 42;
+	std::this_thread::sleep_for(2s);
 
-		// No exception - store the result in the shared state
-		std::cout << "Promise sets shared state to " << x << '\n';
-		px.set_value(x);
-	}
-	catch (...) {
-		// Exception thrown - store it in the shared state
-		px.set_exception(std::current_exception());
-	}
+	// Store the result in the shared state
+	std::cout << "Promise sets shared state to " << x << '\n';
+	px.set_value(x);
 }
 
 // The consumer's task function takes an std::future as argument
 void consume(std::future<int>& fx)
 {
+	// Get the result from the shared state
 	std::cout << "Future calling get()...\n";
-	try {
-		// Get the result from the shared state - may throw
-		int x = fx.get();
-		std::cout << "Future returns from calling get()\n";
-		std::cout << "The answer is " << x << '\n';
-	}
-	catch (std::exception& e) {
-		// Exception thrown - get it from the shared state
-		std::cout << "Exception caught: " << e.what() << '\n';
-	}
+	int x = fx.get();
+	std::cout << "Future returns from calling get()\n";
+	std::cout << "The answer is " << x << '\n';
 }
 
 int main()
@@ -61,7 +46,9 @@ int main()
 
 	// The consumer task function takes the future as argument
 	std::thread thr_consumer(consume, std::ref(fut));
+	std::thread thr_consumer2(consume, std::ref(fut));
 
 	thr_consumer.join();
+	thr_consumer2.join();
 	thr_producer.join();
 }

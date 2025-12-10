@@ -1,4 +1,4 @@
-﻿// Example using std::promise and std::future
+// Example using std::promise and std::future
 // to throw an exception from a producer thread
 // to a consumer thread
 #include <future>
